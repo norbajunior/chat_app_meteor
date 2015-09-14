@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+
+    <style>
+      .message {
+        width: 100%;
+        height: 50px;
+      }
+      .chat-messases
+      {
+        width: 100%;
+        height: 500px;
+        border: 1px solid #ccc;
+        margin-bottom: 1px;
+        /*max-height: 500px;*/
+        overflow-y: auto;
+      }
+
+      #online-users
+      {
+        width: 320px;
+        height: 296px;
+        border: 1px solid #ccc;
+      }
+      .camera-audio-area
+      {
+        width: 320px;
+        height: 240px;
+        border: 1px solid #ccc;
+        margin-bottom: 1px;
+      }
+      .lead {
+        margin-bottom: 1px;
+        font-size: 13px;
+      }
+
+      .messages-in
+      {
+        width: 100%;
+        /*height: 500px;*/
+      }
+
+      .user_chat{
+        background: #fff;
+        text-align: left;
+        font-size: 13px;
+        background-color: #f5f5f5;
+        width: 98%;
+        margin: 5px;
+        padding: 5px;
+      }
+
+      .well {
+        background: #fff;
+        text-align: center;
+      }
+      .modal {
+        text-align: left;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="page-header">
+        <h1>Chatting!</h1>
+
+        <p class="lead">
+          Um simples chat para o curso de streaming para programadores com Wowza e NodeJS
+        </p>
+      </div>
+
+      <h3>Mensagens</h3>
+
+      <p id="thanks"></p>
+
+      <div class="row">
+        <div class="col-md-8">
+          <div class="chat-messases" id="chat-messases">
+            <div id="messages-in" class="messages-in"></div>
+          </div>
+
+          <div class="send-message">
+            <textarea type="textarea" id="message" class="form-control" placeholder="Digite sua mensagem" required autofocus/></textarea>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="camera-audio-area"></div>
+
+          <p class="lead">Usuários online</p>
+
+          <div id="online-users">
+            <ul></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="myModal" class="modal fade">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">Como você se chama?</h4>
+          </div>
+
+          <div class="modal-body">
+            <p>Digite seu nome ou apelido</p>
+
+            <input type="username" id="username" class="form-control" placeholder="" required autofocus>
+
+            <p class="text-warning">
+              <small>
+                Qualquer dúvida entre em contato com nosso suporte
+              </small>
+            </p>
+          </div>
+
+          <div class="modal-footer">
+            <input class="btn btn-success" type="submit" value="Acessar" id="submit">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script src="jquery-uuid.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    <script src="http://localhost:3000/client.js"></script>
+    <script src="faye.js"></script>
+    <script>
+      $(document).ready(function () {
+        window.onbeforeunload = function () {
+          client.publish('/disconect-user', window._user);
+        }
+
+        $("#myModal").modal('show');
+
+        $("input#submit").click(function(){
+          $("#thanks").html('Seja bem vindo <strong>' + $("#username").val() + '</strong> ao mundo realtime chattting! <strong>A Diversão é garantida!</strong>.');
+
+          $("#myModal").modal('hide');
+
+          window._user = { id: $.uuid(), name: $("#username").val() }
+
+          client.publish('/users', window._user);
+        });
+
+        $("#message").on("keyup", function(e) {
+          if (e.keyCode === 13) {
+            client.publish("/messages", {username: window._user.name, text: $(this).val() });
+
+            $(this).val("");
+          }
+        });
+      });
+    </script>
+	</body>
+</html>
